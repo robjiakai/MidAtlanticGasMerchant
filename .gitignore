@@ -1,0 +1,21 @@
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Gurobi
+gurobi.log
+*.lp
+*.mps
+*.sol
+*.ilp
+gurobi.lic
+
+# OS
+.DS_Store
+Thumbs.db
