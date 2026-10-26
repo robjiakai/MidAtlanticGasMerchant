@@ -130,8 +130,8 @@ Full citations, imputation methods and assumptions are in the Milestone 3 report
 |---|---|
 | Rob | `model.py` |
 | Tianyi | `prep_pipelines.py` |
-| Rongjia | `prep_demand.py`, `prep_storage.py` |
-| Christine | `prep_prices.py` |
+| Rongjia Jasper | `prep_demand.py`, `prep_storage.py` |
+| Jingrong Christine | `prep_prices.py` |
 | Anthony | `load_data.py`, `validate.py` |
 
-**Contributing:** edit only the files you own. Commit processed CSVs together with the script that produced them, and pull before you push. Only Rob edits `run_model.ipynb`.
+**Contributing:** edit only the files you own for Week 4. Commit processed CSVs together with the script that produced them, and pull before you push. Only Rob edits `run_model.ipynb`.
