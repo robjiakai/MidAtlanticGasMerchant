@@ -126,12 +126,12 @@ Full citations, imputation methods and assumptions are in the Milestone 3 report
 
 ## Team and ownership
 
-| Member | Responsibility |
+| Member | Responsibility for Week 4 |
 |---|---|
-| Rob | Model formulation and implementation (`model.py`, `load_data.py`), notebook, integration |
-| Tianyi | Pipeline routes and tariffs (`prep_pipelines.py`) |
-| Rongjia | Demand and storage (`prep_demand.py`, `prep_storage.py`) |
-| Christine | Hub and citygate prices (`prep_prices.py`) |
-| Anthony | Data and solution checks (`validate.py`), visualizations (`visualizations.py`) |
+| Rob | `model.py`, `load_data.py` |
+| Tianyi | `prep_pipelines.py` |
+| Rongjia | `prep_demand.py`, `prep_storage.py` |
+| Christine | `prep_prices.py` |
+| Anthony | `validate.py`, `visualizations.py` |
 
 **Contributing:** edit only the files you own. Commit processed CSVs together with the script that produced them, and pull before you push. Only Rob edits `run_model.ipynb`.
