@@ -1,0 +1,7 @@
+parameter,base,low,high,rationale
+lease_share_H,0.005,0.004,0.006,Assumed +/-20% sensitivity scenario
+max_inj_dth_day_H,12280.0,9824.0,14736.0,Assumed +/-20% sensitivity scenario
+max_wd_dth_day_H,50054.0,40043.2,60064.8,Assumed +/-20% sensitivity scenario
+lease_share_M,0.01,0.008,0.012,Assumed +/-20% sensitivity scenario
+max_inj_dth_day_M,12983.0,10386.4,15579.6,Assumed +/-20% sensitivity scenario
+max_wd_dth_day_M,25966.0,20772.8,31159.2,Assumed +/-20% sensitivity scenario
