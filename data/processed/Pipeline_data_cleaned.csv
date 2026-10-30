@@ -1,0 +1,6 @@
+Route,Market,Pipeline,Effective from,Effective to,Capacity (Dth/day),Usage ($/Dth),Reservation ($/Dth/day/month)
+1,NY,Empire Pipeline,2025/4/1,2025/10/31,674050,0.0009,7.0333
+1,NY,Empire Pipeline,2025/11/1,2026/3/31,674050,0.0009,6.9613
+2,NY,National Fuel Gas Supply,2025/4/1,2026/3/31,643977,0.0069,6.135
+3,NJ,Tennessee Gas Pipeline,2025/4/1,2026/3/31,1644682,0.0539,4.6668
+4,PA,Texas Eastern Transmission,2025/4/1,2026/3/31,453103,0.1181,15.63
