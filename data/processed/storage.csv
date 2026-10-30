@@ -1,0 +1,3 @@
+field,market,capacity_dth,init_inv_dth,max_inj_dth_day,max_wd_dth_day,inj_fee,wd_fee
+H,HUB,2210500.0,657453.0,12280.0,50054.0,0.0381,0.0381
+M,NY,1298303.0,436473.0,12983.0,25966.0,0.0381,0.0381

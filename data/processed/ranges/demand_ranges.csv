@@ -1,0 +1,5 @@
+parameter,base,low,high,rationale
+alpha_NY,0.00975088,0.00780071,0.01170106,Assumed +/-20% demand-share scenario
+alpha_NJ,0.01046107,0.00836885,0.01255328,Assumed +/-20% demand-share scenario
+alpha_PA,0.00537914,0.00430331,0.00645496,Assumed +/-20% demand-share scenario
+winter_demand_shock,0.0,0.0,0.2,Assumed winter demand shock for Nov-Mar; scenario analysis only
