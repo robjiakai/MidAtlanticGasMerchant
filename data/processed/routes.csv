@@ -1,5 +1,0 @@
-route,market,pipeline,usage_charge,reservation_charge,full_capacity_dth_day,access_share,fuel_rate
-1,NY,Empire Pipeline,0.0009,7.003299999999999,674050.0,0.02845189525999555,0.0
-2,NY,National Fuel Gas Supply,0.0069,6.135000000000001,643977.0,0.029780566697257822,0.0
-3,NJ,Tennessee Gas Pipeline,0.0539,4.6668,1644682.0,0.012955695994727248,0.0
-4,PA,Texas Eastern Transmission,0.1181,15.63,453103.0,0.0564330847511493,0.0

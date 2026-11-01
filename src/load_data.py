@@ -1,6 +1,8 @@
 import calendar
 import csv
 import math
+import warnings
+from datetime import date
 from pathlib import Path
 
 
@@ -35,7 +37,67 @@ def read_csv(folder, filename, columns, keys, numbers):
     return rows
 
 
-def load_data(data_dir=DATA_DIR):
+
+def read_prices(folder):
+    hub_exists = (Path(folder) / "hub_price.csv").exists()
+    spot_exists = (Path(folder) / "citygate_price.csv").exists()
+    if hub_exists != spot_exists:
+        raise ValueError("Provide both hub_price.csv and citygate_price.csv, or only prices.csv")
+    if hub_exists:
+        hub = read_csv(folder, "hub_price.csv", ["month", "price"], ["month"], ["price"])
+        spot = read_csv(folder, "citygate_price.csv", ["month", "market", "price"], ["month", "market"], ["price"])
+    else:
+        columns = ["month", "pa_hub", "pa_citygate", "ny_citygate", "nj_citygate"]
+        rows = read_csv(folder, "prices.csv", columns, ["month"], columns[1:])
+        hub = [{"month": row["month"], "price": row["pa_hub"]} for row in rows]
+        spot = [{"month": row["month"], "market": market, "price": row[f"{market.lower()}_citygate"]} for row in rows for market in ["NY", "NJ", "PA"]]
+    return hub, spot
+
+
+def read_routes(folder, months, capacity_limits):
+    columns = ["route", "market", "pipeline", "usage_charge", "reservation_charge", "full_capacity_dth_day", "access_share", "fuel_rate"]
+    if (Path(folder) / "routes.csv").exists():
+        return read_csv(folder, "routes.csv", columns, ["route"], columns[3:])
+    source_columns = ["Route", "Market", "Pipeline", "Effective from", "Effective to", "Capacity (Dth/day)", "Usage ($/Dth)", "Reservation ($/Dth/day/month)"]
+    rates = read_csv(folder, "Pipeline_data_cleaned.csv", source_columns, ["Route", "Effective from"], source_columns[5:])
+    for row in rates:
+        row["route"] = int(row["Route"])
+        row["start"] = date(*map(int, row["Effective from"].replace("-", "/").split("/")))
+        row["end"] = date(*map(int, row["Effective to"].replace("-", "/").split("/")))
+    route_ids = sorted({row["route"] for row in rates})
+    if set(route_ids) != set(capacity_limits):
+        raise ValueError("Pipeline_data_cleaned.csv: capacity_limits must cover exactly the uploaded routes")
+    warnings.warn(f"Pipeline upload has no access shares or fuel rates. Using provisional capacity_limits={capacity_limits} Dth/day from Team 23 Backup B and zero fuel retention. Pass capacity_limits to override; routes.csv supplies explicit shares and fuel rates.", stacklevel=2)
+    routes = []
+    for route in route_ids:
+        records = [row for row in rates if row["route"] == route]
+        first = records[0]
+        for column in ["Market", "Pipeline", "Capacity (Dth/day)", "Usage ($/Dth)"]:
+            if any(row[column] != first[column] for row in records):
+                raise ValueError(f"Pipeline route {route}: changing {column} requires a model revision")
+        monthly_rates = []
+        for month in months:
+            year, number = map(int, month["month"].split("-"))
+            daily_rates = []
+            for day in range(1, int(month["days"]) + 1):
+                current = date(year, number, day)
+                matches = [row for row in records if row["start"] <= current <= row["end"]]
+                if len(matches) != 1:
+                    raise ValueError(f"Pipeline route {route}: missing or overlapping tariff at {current}")
+                daily_rates.append(matches[0]["Reservation ($/Dth/day/month)"])
+            if len(set(daily_rates)) != 1:
+                raise ValueError(f"Pipeline route {route}: tariff changes within a month")
+            monthly_rates.append(daily_rates[0])
+        capacity = first["Capacity (Dth/day)"]
+        limit = capacity_limits[route]
+        if not math.isfinite(limit) or capacity <= 0 or not 0 <= limit <= capacity:
+            raise ValueError(f"Pipeline route {route}: invalid accessible capacity {limit}")
+        routes.append(dict(zip(columns, [str(route), first["Market"], first["Pipeline"], first["Usage ($/Dth)"], sum(monthly_rates) / len(monthly_rates), capacity, limit / capacity, 0.0])))
+    return routes
+
+def load_data(data_dir=DATA_DIR, capacity_limits=None):
+    if capacity_limits is None:
+        capacity_limits = {1: 19178, 2: 19178, 3: 21308, 4: 25570}
     months = read_csv(data_dir, "months.csv", ["month", "t", "days"], ["month"], ["t", "days"])
     expected = [f"2025-{m:02d}" for m in range(4, 13)] + [f"2026-{m:02d}" for m in range(1, 4)]
     months.sort(key=lambda row: row["t"])
@@ -47,10 +109,8 @@ def load_data(data_dir=DATA_DIR):
             raise ValueError(f"months.csv: incorrect days for {row['month']}")
     time = {row["month"]: int(row["t"]) for row in months}
     demand = read_csv(data_dir, "demand.csv", ["month", "market", "demand_dth"], ["month", "market"], ["demand_dth"])
-    hub = read_csv(data_dir, "hub_price.csv", ["month", "price"], ["month"], ["price"])
-    spot = read_csv(data_dir, "citygate_price.csv", ["month", "market", "price"], ["month", "market"], ["price"])
-    route_columns = ["route", "market", "pipeline", "usage_charge", "reservation_charge", "full_capacity_dth_day", "access_share", "fuel_rate"]
-    routes = read_csv(data_dir, "routes.csv", route_columns, ["route"], route_columns[3:])
+    hub, spot = read_prices(data_dir)
+    routes = read_routes(data_dir, months, capacity_limits)
     field_columns = ["field", "market", "capacity_dth", "init_inv_dth", "max_inj_dth_day", "max_wd_dth_day", "inj_fee", "wd_fee"]
     storage = read_csv(data_dir, "storage.csv", field_columns, ["field"], field_columns[2:])
     for filename, rows in [("demand.csv", demand), ("hub_price.csv", hub), ("citygate_price.csv", spot)]:
