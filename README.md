@@ -68,11 +68,11 @@ MidAtlanticGasMerchant/
 │   ├── load_data.py         # Reads data/processed/*.csv into model-ready dicts/Series
 │   ├── prep_demand.py       # raw → data/processed/demand.csv
 │   ├── prep_storage.py      # raw → data/processed/storage.csv
-│   ├── prep_pipelines.py    # raw → data/processed/routes.csv
-│   └── prep_prices.py       # raw → data/processed/hub_price.csv, citygate_price.csv
+│   ├── prep_pipelines.py    # Not yet written; pipeline data compiled by hand (see Data provenance)
+│   └── prep_prices.py       # Not yet written; price data compiled by hand (see Data provenance)
 │
 ├── data/
-│   ├── raw/                 # Source files as downloaded (EIA, FERC, filings); never edited by hand
+│   ├── raw/                 # Source downloads and the team's estimation workbooks
 │   └── processed/           # Clean, standardized CSVs; the only data the model reads
 │
 ├── outputs/                 # Solver results and figures written by the notebook
@@ -85,7 +85,19 @@ MidAtlanticGasMerchant/
 data/raw/  ──►  src/prep_*.py  ──►  data/processed/*.csv  ──►  src/load_data.py  ──►  model.py  ──►  outputs/
 ```
 
-Every number the model uses can be traced back to a raw source file through a script. Nothing is reformatted by hand. Rerunning the prep scripts reproduces `data/processed/` exactly.
+This is the intended pipeline. Today it is only partly scripted: some parameters were estimated in spreadsheets, and two processed files were assembled by hand. From `data/processed/` onward, everything is code and fully reproducible. Upstream of it, the table below states what can and cannot be regenerated.
+
+### Data provenance
+
+| Processed file | How it was produced | Rerun by script? |
+|---|---|---|
+| `demand.csv`, `ranges/demand_ranges.csv` | `prep_demand.py` reads the team's estimation workbook (`data/raw/demand-raw/`). The EIA pulls, merchant shares and the five imputed months were computed in that workbook. | Partly: the script rebuilds the CSV from the workbook, not the workbook from EIA |
+| `storage.csv`, `ranges/storage_ranges.csv` | `prep_storage.py` reads EIA capacity and inventory exports plus a hand-compiled workbook of rate limits and fees (`data/raw/storage/`). | Partly: same as demand |
+| `prices.csv` | Compiled by hand from the Eastern Gas South monthly index and EIA citygate prices; missing citygate months linearly interpolated. `prep_prices.py` is not yet written. | No |
+| `Pipeline_data_cleaned.csv` | Compiled by hand from FERC eTariff filings (Empire, National Fuel, Tennessee, Texas Eastern). `prep_pipelines.py` is not yet written. | No |
+| `months.csv` | Calendar table (month, index, days). | Static |
+
+Every hand-entered value is documented, with its source and method, in the Milestone 3 report and [`writeups/demand_storage_assumptions.md`](writeups/demand_storage_assumptions.md). For prices and pipelines, those write-ups, not the scripts, are the audit trail. Processed files are committed, so the model can always be rerun from them exactly.
 
 ## Data contract
 
