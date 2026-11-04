@@ -1,7 +1,7 @@
 """Three simple Matplotlib figures for MidAtlanticGasMerchant.
 
 Run from the repository root:
-    python simple_visualizations.py
+    python visualizations.py
 
 Input (already in GitHub):
     outputs/market_supply.csv, outputs/monthly_plan.csv,
