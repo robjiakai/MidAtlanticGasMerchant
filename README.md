@@ -112,7 +112,7 @@ Hand-entered values are documented with sources in the Milestone 3 report and [`
 | 1. Literature review | Sep 23 | ✅ |
 | 2. Problem definition and data | Oct 7 | ✅ |
 | 3. Parameters and draft model | Oct 21 | ✅ |
-| 4. Complete model and code | Nov 4 | 🔄 Solves to optimality, passes all checks |
+| 4. Complete model and code | Nov 4 | ✅ |
 | 5. Results and sensitivity | Nov 18 | ⏳ |
 | 6. Final report and reproducibility | Dec 2 | ⏳ |
 
