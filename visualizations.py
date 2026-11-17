@@ -1,13 +1,14 @@
-"""Three simple Matplotlib figures for MidAtlanticGasMerchant.
+"""Four simple Matplotlib figures for MidAtlanticGasMerchant.
 
 Run from the repository root:
     python visualizations.py
 
 Input (already in GitHub):
     outputs/market_supply.csv, outputs/monthly_plan.csv,
+    outputs/marginal_cost_by_market.csv,
     data/processed/prices.csv, data/processed/storage.csv
 
-Output: outputs/figures/01_*.png through 03_*.png
+Output: outputs/figures/01_*.png through 04_*.png
 No Gurobi required.  Units: Dth = dekatherm; 1 million Dth = 1e6 Dth.
 """
 from pathlib import Path
@@ -15,9 +16,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
-# Consistent colors across the three figures.
+# Consistent colors across the figures.
 BLUE = "#45749C"       # Pipeline / price / PA storage
 GREEN = "#4D8C76"      # Storage withdrawal / NY storage / injection
 ORANGE = "#CE9252"     # Citygate / storage withdrawal in Figure 3
@@ -145,6 +147,49 @@ def plot_price_vs_storage(plan, prices, output_dir):
     save(fig, output_dir, "03_price_vs_storage.png")
 
 
+def plot_marginal_cost(marginal, prices, output_dir):
+    """Marginal cost of serving demand (DM dual) in each market, against the
+    hub and citygate prices.
+
+    Where the line sits on the citygate price, citygate gas is the marginal
+    supply; where it sits near the hub price, pipeline or storage gas is.
+    """
+    marginal = marginal.set_index("month").loc[MONTHS]
+    chronological_months = (pd.date_range("2025-04-01", periods=12, freq="MS")
+                            .strftime("%Y-%m").tolist())
+    prices = prices.set_index("month").loc[chronological_months]
+    hub = prices["pa_hub"].to_numpy(float)
+    x = np.arange(12)
+    fig, axes = plt.subplots(3, 1, figsize=(10.5, 7.7), sharex=True, sharey=True)
+    for ax, market in zip(axes, ("NY", "NJ", "PA")):
+        ax.plot(x, prices[f"{market.lower()}_citygate"].to_numpy(float), "--",
+                color=ORANGE, linewidth=1.5)
+        ax.plot(x, hub, ":", color=BLUE, linewidth=1.8)
+        ax.plot(x, marginal[market].to_numpy(float), "-o", color=GRAY,
+                linewidth=1.8, markersize=4)
+        style_axes(ax)
+        ax.set_ylim(0, 11)  # Same scale for a fair NY / NJ / PA comparison.
+        ax.set_ylabel(f"{market}  |  $/Dth", fontsize=10)
+    axes[-1].set_xticks(x, TICKS)
+    axes[-1].set_xlabel("Month (Apr 2025–Mar 2026)", labelpad=7)
+    fig.suptitle("Marginal cost of serving demand", fontsize=15,
+                 fontweight="semibold", y=.99)
+    fig.legend(handles=[Line2D([], [], color=GRAY, marker="o", markersize=4,
+                               linewidth=1.8, label="Marginal cost (DM dual)"),
+                        Line2D([], [], color=ORANGE, linestyle="--", linewidth=1.5,
+                               label="Citygate price"),
+                        Line2D([], [], color=BLUE, linestyle=":", linewidth=1.8,
+                               label="Hub price")],
+               loc="upper center", bbox_to_anchor=(.5, .955), ncol=3,
+               frameon=False, fontsize=9)
+    fig.text(.11, .018,
+             "On the citygate line, citygate gas is the marginal supply; "
+             "near the hub line, pipeline or storage gas is.",
+             fontsize=8.5, color=GRAY)
+    fig.subplots_adjust(top=.88, bottom=.105, left=.15, right=.98, hspace=.26)
+    save(fig, output_dir, "04_marginal_cost.png")
+
+
 def main(root=Path(".")):
     root = Path(root)
     out = root / "outputs" / "figures"
@@ -155,6 +200,8 @@ def main(root=Path(".")):
     plot_supply_mix(supply, out)
     plot_storage_inventory(plan, storage, out)
     plot_price_vs_storage(plan, prices, out)
+    marginal = pd.read_csv(root / "outputs" / "marginal_cost_by_market.csv")
+    plot_marginal_cost(marginal, prices, out)
 
 
 if __name__ == "__main__":
